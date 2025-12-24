@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>聖誕節快樂！</title>
+    <style>
+        /* 全局樣式 */
+        body {
+            margin: 0; padding: 0;
+            background-color: #1a0000; 
+            background-image: radial-gradient(circle, #330000 0%, #000000 100%);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        /* 主要卡片容器 */
+        .container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 10;
+            max-width: 80%;
+            transition: opacity 0.5s;
+        }
+
+        h1 { color: #d42426; font-size: 2.5em; margin-bottom: 30px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+
+        /* 禮物盒樣式 */
+        .gift-box-container { position: relative; width: 150px; height: 150px; margin: 0 auto; cursor: pointer; }
+        .gift-box { position: relative; width: 100%; height: 100%; animation: float 3s ease-in-out infinite; }
+        .gift-lid { position: absolute; top: 0; left: 0; width: 100%; height: 40px; background-color: #d42426; border-radius: 10px 10px 0 0; z-index: 2; transition: all 0.5s ease-out; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .gift-lid::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 30px; height: 100%; background-color: #ffd700; }
+        .gift-body { position: absolute; bottom: 0; left: 0; width: 100%; height: 110px; background-color: #c41e20; border-radius: 0 0 10px 10px; z-index: 1; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .gift-body::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 30px; height: 100%; background-color: #ffd700; }
+
+        /* 禮物打開動畫 */
+        .gift-box.open .gift-lid { transform: translateY(-120px) rotate(-20deg); opacity: 0; }
+        .gift-box.open { animation: shake 0.5s ease-in-out forwards; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); } 20%, 40%, 60%, 80% { transform: translateX(10px); } }
+
+        /* 最後祝福內容 */
+        .hidden-content { display: none; margin-top: 30px; opacity: 0; transition: opacity 1s ease-in; }
+        .final-message { font-size: 3em; color: #d42426; font-weight: bold; animation: popIn 1s ease-out forwards; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
+        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 80% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* 病毒警告特效 */
+        #virus-alert-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: none; justify-content: center; align-items: center;
+            z-index: 9998;
+            font-family: 'Courier New', Courier, monospace;
+            color: #ff0000; text-align: center;
+        }
+        .virus-box { border: 4px solid red; padding: 20px 30px; background-color: #1a0000; box-shadow: 0 0 30px red; max-width: 90%; }
+        .virus-title { font-size: 1.8em; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; animation: blinkFast 0.5s infinite;}
+        .virus-text { font-size: 1.2em; line-height: 1.5; }
+        .blinking-text { animation: blinkNormal 1s infinite; }
+        @keyframes blinkFast { 0%, 100% { opacity: 1; color: red; } 50% { opacity: 0.5; color: white; } }
+        @keyframes blinkNormal { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* =========================================
+           修改：影片播放區域
+        ========================================= */
+        #video-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: black;
+            display: none; /* 預設隱藏 */
+            justify-content: center; align-items: center;
+            z-index: 9999; /* 最高層級 */
+        }
+
+        #jumpscare-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 讓影片填滿整個螢幕 */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-container">
+        <h1>點擊打開禮物</h1>
+        <div class="gift-box-container" id="giftBox">
+            <div class="gift-box">
+                <div class="gift-lid"></div>
+                <div class="gift-body"></div>
+            </div>
+        </div>
+
+        <div class="hidden-content" id="hiddenContent">
+            <h2 class="final-message">🎄聖誕節快樂☃️<br>HO HO HO</h2>
+        </div>
+    </div>
+
+    <div id="virus-alert-overlay">
+        <div class="virus-box">
+            <div class="virus-title">⚠️ 系統嚴重警告 ⚠️</div>
+            <div class="virus-text">
+                檢測到未知惡意軟體入侵！<br>
+                裝置資料正在被竊取...<br>
+                <br>
+                <span class="blinking-text">連線中斷...</span><br>
+                <span class="blinking-text" style="animation-delay: 0.3s;">系統崩潰倒數...</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="video-overlay">
+        <video id="jumpscare-video" playsinline webkit-playsinline>
+            <source src="大叫.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <script>
+        const giftBox = document.getElementById('giftBox');
+        const hiddenContent = document.getElementById('hiddenContent');
+        const mainContainer = document.getElementById('main-container');
+        const virusAlertOverlay = document.getElementById('virus-alert-overlay');
+        const videoOverlay = document.getElementById('video-overlay');
+        const jumpscareVideo = document.getElementById('jumpscare-video');
+        const titleH1 = document.querySelector('h1');
+        
+        let isOpened = false;
+
+        giftBox.addEventListener('click', () => {
+            if (isOpened) return;
+            isOpened = true;
+
+            // ==========================================
+            // 【關鍵修改】: 偷騙瀏覽器權限
+            // ==========================================
+            // 在點擊的當下，先將影片靜音播放一次，然後馬上暫停。
+            // 這會讓瀏覽器認為「使用者已經同意播放這個影片了」。
+            jumpscareVideo.muted = true; // 先靜音以防萬一
+            jumpscareVideo.play().then(() => {
+                jumpscareVideo.pause();      // 成功播放後馬上暫停
+                jumpscareVideo.currentTime = 0; // 重置時間
+                jumpscareVideo.muted = false;   // 把靜音取消，準備等一下嚇人用
+            }).catch(error => {
+                console.log("預先加載失敗，可能瀏覽器太嚴格:", error);
+            });
+            // ==========================================
+
+            // 1. 打開禮物盒
+            giftBox.querySelector('.gift-box').classList.add('open');
+            
+            // 2. 顯示病毒警告 (延遲 0.6秒)
+            setTimeout(() => {
+                mainContainer.style.opacity = 0;
+                virusAlertOverlay.style.display = 'flex';
+            }, 300); 
+
+            // 3. 播放影片 Jumpscare (延遲 3秒後執行)
+            setTimeout(() => {
+                // 隱藏病毒警告
+                virusAlertOverlay.style.display = 'none';
+                
+                // 顯示影片層
+                videoOverlay.style.display = 'flex';
+                
+                // 正式播放影片 (這時候已經有聲音權限了)
+                jumpscareVideo.volume = 1.0;
+                jumpscareVideo.currentTime = 0;
+                
+                // 這裡再確保一次靜音已關閉
+                jumpscareVideo.muted = false; 
+                
+                var playPromise = jumpscareVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.error("影片播放被阻擋:", error);
+                        // 如果真的很不幸還是被擋，至少顯示畫面
+                    });
+                }
+
+                // 4. 監聽影片結束事件
+                jumpscareVideo.onended = () => {
+                    videoOverlay.style.display = 'none';
+                    mainContainer.style.opacity = 1;
+                    giftBox.style.display = 'none';
+                    titleH1.style.display = 'none';
+
+                    hiddenContent.style.display = 'block';
+                    setTimeout(() => {
+                        hiddenContent.style.opacity = '1';
+                    }, 50);
+                };
+
+            }, 3000); 
+        });
+    </script>
+</body>
+</html>
